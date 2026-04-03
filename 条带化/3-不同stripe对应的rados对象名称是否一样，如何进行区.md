@@ -26,9 +26,14 @@
 1. **将一维偏移量映射到三维坐标**
 
     - 条带号`(stripeno) = blockno / stripe_count`
-  
 
+    - 条带内位置`(stripeos) = blockno % stripe_count`
 
+    - 对象集号`(objectsetno) = stripeno / (object_size / stripe_unit)`
+
+    - 最终对象号`(objnum) = objectsetno * stripe_count + stripepos`
+
+    >ps: 当
 
 
 

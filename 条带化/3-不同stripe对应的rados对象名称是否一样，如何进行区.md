@@ -7,6 +7,16 @@
 
 ## 🎯 第一步：核心公式——计算“对象编号” (objnum)
 
+`objnum`是一个从0开始的递增整数，其计算逻辑由Ceph文件布局（Layout）的四个关键参数决定:
+
+- `stripe_unit`(条带单元): 4MB
+
+- `stripe_count`(条带宽度): 4
+
+- `object_size`(对象大小): 4MB(此例中等于stripe_unit)
+
+- `file_offset`(文件内容偏移): 指待读写文件在原始文件中的起始位置
+
 
 
 

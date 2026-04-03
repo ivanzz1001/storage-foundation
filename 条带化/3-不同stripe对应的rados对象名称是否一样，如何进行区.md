@@ -13,12 +13,20 @@
 
 - `stripe_count`(条带宽度): 4
 
-- `object_size`(对象大小): 4MB(此例中等于stripe_unit)
+- `object_size`(对象大小): 4MB(此例中等于`stripe_unit`)
 
 - `file_offset`(文件内容偏移): 指待读写文件在原始文件中的起始位置
 
+计算`objnum`的核心思路是：逻辑偏移量 → 逻辑条带单元（blockno）→ 逻辑对象号（objnum）。这里我们以`1GB`大小的文件为例，它会生成256个`objnum`从0递增到255的RADOS对象。具体计算步骤如下：
 
+1. **计算逻辑条带单元号(blockno)**
 
+    用文件内偏移除以`stripe_unit`。例如，文件开头(file_offset=0)的数据，对应的`blockno = 0 / 4MB = 0`
+
+1. **将一维偏移量映射到三维坐标**
+
+    - 条带号`(stripeno) = blockno / stripe_count`
+  
 
 
 

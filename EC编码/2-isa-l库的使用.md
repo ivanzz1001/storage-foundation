@@ -21,3 +21,32 @@
 
 在EC的实现中，我们想要对一段数据进行编码，假设`chunk size`为128K， ec模式为`8+4`(k=8, p=4, m=12)，因此当凑足1M数据后，我们需要对1M数据进行编码，生成512K的校验数据。
 
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0001.jpg)
+
+### 1.1 编码过程
+
+编码过程用到了3个函数：
+
+```C
+gf_gen_cauchy1_matrix()
+
+ec_init_tables_base()
+
+ec_encode_data_base()
+```
+
+#### gf_gen_cauchy1_matrix()
+
+基于柯西矩阵来生成编码矩阵。编码矩阵用一个`m*k`字节长度的buff来存放，生成的编码矩阵如下：
+
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0002.jpg)
+
+>ps: encode-matrix每个数据块的大小为1字节
+
+#### ec_init_tables_base()
+
+本函数根据编码矩阵`encode-matrix`的校验块部分（上图中的浅粉色数据块）生成`g_tbls`:
+
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0003.jpg)
+
+>ps: g_tbls每个数据块的大小为32字节

@@ -119,11 +119,11 @@ ec_encode_data_base()
 
 从编码矩阵中，按照src_in_err选择可以用于解码的方阵，decode_index为: `[0， 2， 3， 4， 6， 7,  8， 9]`
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0008.jpg)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0008.png)
 
 对方阵求逆`gf_invert_matrix`：
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0009.jpg)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0009.png)
 
 gf_invert_matrix得到的invert_matrix并非最终的解码矩阵。如下代码，生成`nerrs * k`解码矩阵：
 
@@ -197,6 +197,6 @@ gf_gen_decode_matrix_simple(u8 *encode_matrix, u8 *decode_matrix, u8 *invert_mat
 
 同编码过程，使用g_tbls与正常的数据块运算，恢复损坏的数据块。
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0010.jpg)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0010.png)
 
 <br>

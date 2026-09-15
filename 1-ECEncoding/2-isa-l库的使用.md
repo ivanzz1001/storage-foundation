@@ -21,7 +21,7 @@
 
 在EC的实现中，我们想要对一段数据进行编码，假设`chunk size`为128K， ec模式为`8+4`(k=8, p=4, m=12)，因此当凑足1M数据后，我们需要对1M数据进行编码，生成512K的校验数据。
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0001.jpg)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/1-ECEncoding/image/isal/erasure-encode-0001.jpg)
 
 ### 1.1 编码过程
 
@@ -39,7 +39,7 @@ ec_encode_data_base()
 
 基于柯西矩阵来生成编码矩阵。编码矩阵用一个`m*k`字节长度的buff来存放，生成的编码矩阵如下：
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0002.jpg)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/1-ECEncoding/image/isal/erasure-encode-0002.jpg)
 
 >ps: encode-matrix每个数据块的大小为1字节
 
@@ -47,7 +47,7 @@ ec_encode_data_base()
 
 本函数根据编码矩阵`encode-matrix`的校验块部分（上图中的浅粉色数据块）生成`g_tbls`:
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0003.jpg)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/1-ECEncoding/image/isal/erasure-encode-0003.jpg)
 
 >ps: g_tbls每个数据块的大小为32字节
 
@@ -56,7 +56,7 @@ ec_encode_data_base()
 
 使用g_tbls对数据进行编码:
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0004.jpg)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/1-ECEncoding/image/isal/erasure-encode-0004.jpg)
 
 这里可以简单看下行列式的乘法实现：
 
@@ -90,7 +90,7 @@ ec_encode_data_base()
 }
 ```
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0005.jpg)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/1-ECEncoding/image/isal/erasure-encode-0005.jpg)
 
 从上面可以看到校验块(128K)的第`i`个字节，就是用8个src块(ps: 每个块128KB)的第`i`个字节，分别与`g_tbls`的8个块(ps: 每个块32字节）中的**第一个字节**进行`gf_mul`运算所得。
 
@@ -111,19 +111,19 @@ ec_encode_data_base()
 
 #### 1) gf_gen_decode_matrix()
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0006.jpg)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/1-ECEncoding/image/isal/erasure-encode-0006.jpg)
 
 在一个stripe的所有chunk中，已知哪些块存在数据错误，例如上图：`nsrcErrs = 2`, `nErrs = 3`
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0007.jpg)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/1-ECEncoding/image/isal/erasure-encode-0007.jpg)
 
 从编码矩阵中，按照src_in_err选择可以用于解码的方阵，decode_index为: `[0， 2， 3， 4， 6， 7,  8， 9]`
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0008.png)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/1-ECEncoding/image/isal/erasure-encode-0008.png)
 
 对方阵求逆`gf_invert_matrix`：
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0009.png)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/1-ECEncoding/image/isal/erasure-encode-0009.png)
 
 gf_invert_matrix得到的invert_matrix并非最终的解码矩阵。如下代码，生成`nerrs * k`解码矩阵：
 
@@ -197,6 +197,6 @@ gf_gen_decode_matrix_simple(u8 *encode_matrix, u8 *decode_matrix, u8 *invert_mat
 
 同编码过程，使用g_tbls与正常的数据块运算，恢复损坏的数据块。
 
-![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/EC%E7%BC%96%E7%A0%81/image/isal/erasure-encode-0010.png)
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/1-ECEncoding/image/isal/erasure-encode-0010.png)
 
 <br>

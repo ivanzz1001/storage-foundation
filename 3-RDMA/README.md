@@ -13,3 +13,5 @@
 - **RDMA教程**：https://github.com/StarryVae/RDMA-tutorial/blob/master/tutorial.md
 
 - **RDMA GitHub仓库**: https://github.com/linux-rdma/rdma-core
+
+- **相关参考书籍**: https://www.ptpress.com.cn/publishing/book/57177589-a529-4923-9e3a-6e9f23975f1a

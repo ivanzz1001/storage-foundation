@@ -11,3 +11,5 @@
   - 一个极简的RDMA hello world程序: https://zhuanlan.zhihu.com/p/654739175
 
 - **RDMA教程**：https://github.com/StarryVae/RDMA-tutorial/blob/master/tutorial.md
+
+- **RDMA GitHub仓库**: https://github.com/linux-rdma/rdma-core

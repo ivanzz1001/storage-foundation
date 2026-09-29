@@ -18,5 +18,7 @@
 
 - **RDMA GitHub仓库**: https://github.com/linux-rdma/rdma-core
 
+- **RDMA 管理工具和测试工具**: https://juejin.cn/post/7441397886695325723
+
 - **相关参考书籍**: https://www.ptpress.com.cn/publishing/book/57177589-a529-4923-9e3a-6e9f23975f1a
 

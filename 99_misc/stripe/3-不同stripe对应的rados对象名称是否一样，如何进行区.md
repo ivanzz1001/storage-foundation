@@ -3,7 +3,7 @@
 
 在Ceph中，每个RADOS对象的名称都是唯一的。Ceph通过一个分层且结构化的命名规则来区分它们，其核心是计算一个唯一的“对象编号”（objnum），然后将它拼接到一个“基础名”（Base Name）上
 
-<br>
+---
 
 ## 🎯 第一步：核心公式——计算“对象编号” (objnum)
 
@@ -37,7 +37,7 @@
 
 
 
-<br>
+---
 
 ## 🏷️ 第二步：拼接“基础名” (Base Name)
 
@@ -67,7 +67,7 @@
 
     参看:
 
-    - [go-ceph/rados/striper/doc.go](https://git.redxen.eu/RepoMirrors/go-ceph/src/commit/2c8601001720606bf444453aa2448065d64ada87/rados/striper/doc.go
+    - [go-ceph/rados/striper/doc.go](https://git.redxen.eu/RepoMirrors/go-ceph/src/commit/2c8601001720606bf444453aa2448065d64ada87/rados/striper/doc.go)
 
 
 总结来说，不同stripe对应的RADOS对象名称各不相同。它们共享同一个由上层应用决定的“基础名”，但通过一个计算出的、唯一的数字后缀 (objnum) 来进行区分。

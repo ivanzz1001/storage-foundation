@@ -64,7 +64,6 @@ ec_encode_data_base()
   // Generate EC parity blocks from sources
   ec_encode_data(len, k, p, g_tbls, frag_ptrs, &frag_ptrs[k]);
   
-  
   void ec_encode_data(int len, int srcs, int dests, unsigned char *v, unsigned char **src,
                  unsigned char **dest)
   {
@@ -132,7 +131,6 @@ gf_invert_matrix得到的invert_matrix并非最终的解码矩阵。如下代码
 * Generate decode matrix from encode matrix and erasure list
 *
 */
-
 static int
 gf_gen_decode_matrix_simple(u8 *encode_matrix, u8 *decode_matrix, u8 *invert_matrix,
                             u8 *temp_matrix, u8 *decode_index, u8 *frag_err_list, int nerrs, int k,

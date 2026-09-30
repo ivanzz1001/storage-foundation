@@ -12,6 +12,8 @@
 
 熟悉存储系统的你不会对条带化感到陌生，它是一种提升存储性能和吞吐能力的手段，通过将有序的数据分割成多个区段并分别存储到多个存储设备上，最常见的条带化就是RAID， 而Ceph的条带化处理就类似于RAID。如果想发挥ceph的并行IO处理能力，就应该充分利用客户端的条带化功能。需要注意的是，LibRados原生接口并不具有条带化功能，比如：使用LibRados接口上传1GB的文件，那么落到存储磁盘上的就是1GB大小的文件。存储集群中的Objects也同样不具备条带化功能，实际上是由上述三种类型的客户端将数据条带化之后再存储到集群Objects之中的。
 
+---
+
 ## 1. 条带化处理过程
 
 1）将数据切分为条带单元块；
@@ -26,11 +28,11 @@
 
 >ps: 上面“前4MB就存储在Object0中”是基于stripe_count为1的情况下来说的，参看下图的stripe_unit编号也可以看得出来这一点。
 
-![ceph-stripe](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/%E6%9D%A1%E5%B8%A6%E5%8C%96/image/ceph_stripe_1.jpg)
+![ceph-stripe](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/99_misc/stripe/assets/ceph_stripe_1.jpg)
 
 随着存储文件size的增加，可以通过将客户端数据条带化分割存储到多个Objects中，同时由于Object映射到不同的PG上进而会映射到不同的OSD上，这样就能够充分利用每个OSD对应的物理磁盘设备的IO性能，以此实现每个并行的写操作都以最大化的速率进行。随着条带数的增加对写性能的提升也是相当可观的。如下图，数据被分割存储到两个Object Set中，条带单元块存储的顺序为`stripe unit 0~31`:
 
-![ceph-stripe](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/%E6%9D%A1%E5%B8%A6%E5%8C%96/image/ceph_stripe_2.jpg)
+![ceph-stripe](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/99_misc/stripe/assets/ceph_stripe_2.jpg)
 
 
 ceph有3个重要参数会对条带化产生影响：
@@ -55,7 +57,7 @@ ceph有3个重要参数会对条带化产生影响：
 
 通常，如果我们要读取一个文件的某一段数据，我们只需要(`object-name`, `offset`, `length`)这三个参数就可以了。这个读取过程其实是有一个前提：文件数据存在于一个线性的一维地址空间。如下图所示:
 
-![ceph-stripe](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/%E6%9D%A1%E5%B8%A6%E5%8C%96/image/ceph_stripe_3.jpg)
+![ceph-stripe](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/99_misc/stripe/assets/ceph_stripe_3.jpg)
 
 但现在文件数据经过条带化后，其就变成了一个三维地址空间(`objectset`, `object`, `stripe`)。函数file_to_extents()用于实现此功能:
 
@@ -169,4 +171,4 @@ void Striper::file_to_extents(
 这个过程其实还算比较简单，如下图所示：
 
 
-![ceph-stripe](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/%E6%9D%A1%E5%B8%A6%E5%8C%96/image/ceph_stripe_4.jpg)
+![ceph-stripe](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/99_misc/stripe/assets/ceph_stripe_4.jpg)

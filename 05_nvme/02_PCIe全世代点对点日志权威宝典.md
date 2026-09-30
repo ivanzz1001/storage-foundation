@@ -16,6 +16,9 @@ PCIe: 正如我们一直以来所了解的，自从我们接触计算机以来�
 
 >ps: PCIe全称Peripheral Component Interconnect Express，中文叫“高速串行计算机扩展总线标准”
 
+
+---
+
 ## 1. PCIe 是如何诞生的？
 
 尽管`PCI`非常知名，但其速度限制问题仍需审视。为了解决速度限制问题，PCI Express 插槽应运而生。PCIe 全称为 Peripheral Component Interconnect Express（PCI Express），这是一款于 2003 年推出的主板扩展技术。

@@ -1,6 +1,8 @@
 # NVMe（Non-Volatile Memory Express）详解
 
->转载自: https://zhuanlan.zhihu.com/p/32725156182
+> 本文基于https://zhuanlan.zhihu.com/p/32725156182 整理而成
+
+
 
 ## 1. NVMe的定义与核心特性
 

@@ -17,3 +17,5 @@ RDMA需要特定的硬件支持，比如`InfiniBand`网络需要一套独立于�
 **RDMA**(remote direct memory access)是一种硬件卸载的网络技术，无需操作系统内核参与，没有系统调用和上下文切换，不消耗CPU，也没有用户空间和内核空间的来回内存拷贝（彻底的零拷贝）。
 
 **RoCE**(RDMA over Converged Ethernet)是一种基于以太网的RDMA实现方案，相比于InfiniBand网络RoCE不需要昂贵的专用的网络设备（网卡，交换机），而是基于数据中心已有的以太网架构工作，因此基于RoCE的RDMA技术成为数据中心广泛使用的高性能网络方案（微软、阿里等）。RoCE仍然依赖于数据中心网络，对个人来讲还是不容易接触。
+
+![ec-isal](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/02_rdma/assets/rdma_roce.jpg)

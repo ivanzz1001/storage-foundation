@@ -128,4 +128,20 @@ Soft-RoCE就是把本来应该卸载到硬件的封包和解析工作，又拿�
 ![rdma-roce](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/02_rdma/assets/rdma_roce.jpg)
 
 
+## 3. 实验环境部署
+
+下面开始实操部分。当前笔者使用的是`Ubuntu 22.04`, 该版本只需要很简单的配置就可以跑RDMA的程序了，并且比较新.
+
+```bash
+# cat /etc/lsb-release 
+DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=22.04
+DISTRIB_CODENAME=jammy
+DISTRIB_DESCRIPTION="Ubuntu 22.04.4 LTS"
+```
+
+### 3.1 准备环境
+
+我们测试的网络拓扑很简单，一台PC，以及其上运行的两台Ubuntu虚拟机都连接到一个虚拟子网上，两台虚拟机上将运行Soft-RoCE，我们在宿主机上通过Wireshark抓取数据包。
+
 

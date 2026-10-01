@@ -36,6 +36,12 @@ RoCE本身分为两个版本，我们先简单讲一下发展历史：
 
 下图比较清晰的展现了RDMA几种协议的关系：
 
+![rdma-roce](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/02_rdma/assets/rdma_protocol_layer.jpg)
+
+可能还不够直观，我们把RoCE v2的一个报文展开来看（没有画出物理层协议）：
+
+
+
 
 
 ![rdma-roce](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/02_rdma/assets/rdma_roce.jpg)

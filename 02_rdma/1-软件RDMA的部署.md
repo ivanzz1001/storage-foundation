@@ -127,6 +127,7 @@ Soft-RoCE就是把本来应该卸载到硬件的封包和解析工作，又拿�
 
 ![rdma-roce](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/02_rdma/assets/rdma_roce.jpg)
 
+---
 
 ## 3. 实验环境部署
 
@@ -144,4 +145,8 @@ DISTRIB_DESCRIPTION="Ubuntu 22.04.4 LTS"
 
 我们测试的网络拓扑很简单，一台PC，以及其上运行的两台Ubuntu虚拟机都连接到一个虚拟子网上，两台虚拟机上将运行Soft-RoCE，我们在宿主机上通过Wireshark抓取数据包。
 
+![rdma-roce](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/02_rdma/assets/rdma_roce_deploy.jpg)
 
+确保上面三个主机之间都可以相互ping通。
+
+### 3.2 

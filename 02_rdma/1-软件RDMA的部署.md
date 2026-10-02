@@ -228,7 +228,7 @@ sudo apt install -y perftest
 
 3）**rdma-core**
 
-  `rdma-core`是RDMA的“用户态基础环境包”， 通常包含RDMA 用户态核心运行时、基础工具和守护进程。
+  `rdma-core`是RDMA的“用户态基础环境包”， 含有RDMA 用户态基础组件和配置。
 
   执行`apt install rdma-core`是安装的内容主要包括：
 
@@ -240,4 +240,41 @@ sudo apt install -y perftest
     - libibmad5：MAD 库
     - libnl-3-200、libnl-route-3-200 等网络库
 
-  
+  - **核心工具和守护进程**
+
+    - rdma 命令：查看/管理 RDMA 设备，如 rdma link show、rdma dev show
+    - rdma-ndd：RDMA 网络设备命名守护进程
+    - 相关 udev 规则和 systemd 服务
+
+  - **默认可能安装的推荐工具**
+
+    apt 默认会安装推荐包，通常还包括：
+    - ibverbs-utils：提供 ibv_devices、ibv_devinfo 等
+    - rdmacm-utils：提供 rping、ucmatose 等
+    - infiniband-diags：可能提供 ibstat 等
+
+4）**ibverbs-providers**
+
+  ibverbs-providers 是 rdma-core 项目下的一个包，专门包含 libibverbs 的用户态硬件驱动（provider drivers）。它是让上层应用能够通过 libibverbs 与你具体的 RDMA 网卡（HCA）通信的关键组件。
+  >ps: 一般它会被 apt install rdma-core 命令自动作为依赖安装
+
+   - **核心作用：连接通用库与具体硬件**
+   
+     要理解它的作用，需要先厘清 RDMA 用户态的几个层次：
+
+     - 应用程序：如 MPI、NVMe-oF 等，它们调用通用的 RDMA 接口。
+     - libibverbs 库：提供统一的 API（即“verbs”），应用程序通过它来请求 RDMA 操作。
+     - ibverbs-providers：包含针对不同品牌和型号网卡的驱动程序。当应用程序通过 libibverbs 发起请求时，libibverbs 会加载对应的 provider 驱动，由它来直接操作硬件。
+     
+     简单说，libibverbs 是“插座”，而 ibverbs-providers 是各种“插头”，确保你的应用能连接到特定的 RDMA 硬件。
+
+  - **包含哪些驱动**
+
+    该包内含大量主流 RDMA 网卡的驱动，常见的有：
+    - Mellanox (NVIDIA): mlx4 (ConnectX-3), mlx5 (Connect-IB/ConnectX-4及以上)
+    - Broadcom: bnxt_re (NetXtreme-E RoCE)
+    - Intel: hfi1verbs (Omni-Path), i40iw (X722 RDMA)
+    - Amazon: efa (Elastic Fabric Adapter)
+    - Chelsio: cxgb4 (T4 iWARP)
+    
+    软件实现: rxe (Soft-RoCE), siw (Soft-iWARP)，用于在没有硬件的情况下测试 RDMA 功能

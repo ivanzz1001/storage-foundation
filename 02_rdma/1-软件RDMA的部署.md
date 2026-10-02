@@ -278,3 +278,7 @@ sudo apt install -y perftest
     - Chelsio: cxgb4 (T4 iWARP)
     
     软件实现: rxe (Soft-RoCE), siw (Soft-iWARP)，用于在没有硬件的情况下测试 RDMA 功能
+
+5）**ibverbs-utils**
+
+  `ibverbs-utils` 是 rdma-core 项目提供的一个用户态 RDMA 诊断与测试工具集，基于 libibverbs 库，用于查看 RDMA 设备信息、测试基本连通性和性能。它不包含驱动，也不包含开发库，只是一组命令行实用程序

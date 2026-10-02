@@ -216,16 +216,28 @@ sudo apt install -y perftest
   iproute2 是 Linux 下最核心的网络管理工具集，用于配置网络接口、IP 地址、路由、隧道、流量控制、套接字统计等。它是现代 Linux 中替代老式 net-tools（ifconfig、route、netstat、arp）的标准工具。
   主要包含如下：
   
-  - ip: 网络接口、地址、路由、邻居、规则、命名空间等
-  - ss: 查看套接字连接，替代 netstat
-  - tc: 流量控制、QoS、限速、队列规则
-  - bridge: 网桥管理
-  - rdma: RDMA 设备管理
-  - devlink: 设备驱动参数、固件、端口管理
-  - genl: 通用 netlink 操作
-  - nstat / lnstat: 网络统计
-  - rtacct / rtmon: 路由统计与监控
+  - `ip`: 网络接口、地址、路由、邻居、规则、命名空间等
+  - `ss`: 查看套接字连接，替代 netstat
+  - `tc`: 流量控制、QoS、限速、队列规则
+  - `bridge`: 网桥管理
+  - `rdma`: RDMA 设备管理
+  - `devlink`: 设备驱动参数、固件、端口管理
+  - `genl`: 通用 netlink 操作
+  - `nstat / lnstat`: 网络统计
+  - `rtacct / rtmon`: 路由统计与监控
 
+3）**rdma-core**
 
+  `rdma-core`是RDMA的“用户态基础环境包”， 通常包含RDMA 用户态核心运行时、基础工具和守护进程。
+
+  执行`apt install rdma-core`是安装的内容主要包括：
+
+  - **自动安装依赖库**
+
+    - libibverbs1：libibverbs 运行时库
+    - librdmacm1：RDMA CM 运行时库
+    - libibumad3：用户态 MAD 库
+    - libibmad5：MAD 库
+    - libnl-3-200、libnl-route-3-200 等网络库
 
   

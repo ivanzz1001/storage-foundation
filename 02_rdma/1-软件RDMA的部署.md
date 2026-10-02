@@ -151,10 +151,41 @@ DISTRIB_DESCRIPTION="Ubuntu 22.04.4 LTS"
 
 ### 3.2 确认当前内核是否支持RXE
 
+执行如下命令查询：
 ```bash
 # cat /boot/config-$(uname -r) | grep RXE      
 CONFIG_RDMA_RXE=m
 ```
-1) **如果CONFIG_RDMA_RXE的值为y或者m，表示当前的操作系统可以使用RXE**
+
+1）如果CONFIG_RDMA_RXE的值为y或者m，表示当前的操作系统可以使用RXE
 
   > **CONFIG_RDMA_RXE**的具体含义是Linux内核中控制Soft-RoCE软件实现的编译开关，当配置值为y时，该驱动会直接编译进内核；配置值为m时，则会以独立内核模块rdma_rxe的形式存在，需要手动加载。
+
+2）如果该选项值为n或者搜索不到RXE，那么很遗憾你可能需要重新编译内核
+
+  编译内核时需要使能如下几个选项：
+  ```text
+  CONFIG_INET
+  CONFIG_PCI
+  CONFIG_INFINIBAND
+  CONFIG_INFINIBAND_VIRT_DMA
+  ```
+  至于具体的重新编译内核的方法，可以先自行查找。
+
+### 3.3 安装用户态动态链接库
+
+这里主要是安装**rdma-core**相关的一组依赖库，可以参看对应的GitHub仓库地址:https://github.com/linux-rdma/rdma-core
+
+1）检查是否已经安装
+
+  ```bash
+  # ldconfig -p | grep -E 'rdma-core'
+  ```
+
+2）如果没有安装，执行如下命令进行安装
+
+  ```bash
+  ```
+
+
+  

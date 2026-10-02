@@ -172,20 +172,60 @@ CONFIG_RDMA_RXE=m
   ```
   至于具体的重新编译内核的方法，可以先自行查找。
 
-### 3.3 安装用户态动态链接库
+### 3.3 安装开发工具
 
-这里主要是安装**rdma-core**相关的一组依赖库，可以参看对应的GitHub仓库地址:https://github.com/linux-rdma/rdma-core
+#### 3.3.1 安装软件包
+在两个节点执行：
+```bash
+# sudo apt update
+# sudo apt install -y \
+  build-essential pkg-config iproute2 ethtool tcpdump \
+  rdma-core ibverbs-providers ibverbs-utils \
+  libibverbs-dev librdmacm-dev rdmacm-utils perftest
+```
 
-1）检查是否已经安装
+如果 perftest 无法找到，启用 Ubuntu Universe 仓库后重试：
+
+```bash
+sudo add-apt-repository universe
+sudo apt update
+sudo apt install -y perftest
+```
+下面介绍一下上面安装的各组件:
+
+1）**build-essential**
+
+  build-essential 是 Debian/Ubuntu 下的一个元包，本身不包含具体程序，而是依赖一组常用编译工具：
+  
+  - gcc
+  - g++
+  - make
+  - libc6-dev
+  - dpkg-dev
+
+  它常用于从源码编译软件。可以使用`dpkg -s build-essential`来检查是否已经安装:
 
   ```bash
-  # ldconfig -p | grep -E 'rdma-core'
+  # dpkg -s build-essential
+  Package: build-essential
+  Status: install ok installed
   ```
 
-2）如果没有安装，执行如下命令进行安装
+2）**iproute2（可选）**
 
-  ```bash
-  ```
+  iproute2 是 Linux 下最核心的网络管理工具集，用于配置网络接口、IP 地址、路由、隧道、流量控制、套接字统计等。它是现代 Linux 中替代老式 net-tools（ifconfig、route、netstat、arp）的标准工具。
+  主要包含如下：
+  
+  - ip: 网络接口、地址、路由、邻居、规则、命名空间等
+  - ss: 查看套接字连接，替代 netstat
+  - tc: 流量控制、QoS、限速、队列规则
+  - bridge: 网桥管理
+  - rdma: RDMA 设备管理
+  - devlink: 设备驱动参数、固件、端口管理
+  - genl: 通用 netlink 操作
+  - nstat / lnstat: 网络统计
+  - rtacct / rtmon: 路由统计与监控
+
 
 
   

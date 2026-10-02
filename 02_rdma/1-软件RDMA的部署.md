@@ -155,6 +155,6 @@ DISTRIB_DESCRIPTION="Ubuntu 22.04.4 LTS"
 # cat /boot/config-$(uname -r) | grep RXE      
 CONFIG_RDMA_RXE=m
 ```
-- ##### 如果CONFIG_RDMA_RXE的值为y或者m，表示当前的操作系统可以使用RXE;
+1) **如果CONFIG_RDMA_RXE的值为y或者m，表示当前的操作系统可以使用RXE**
 
   > **CONFIG_RDMA_RXE**的具体含义是Linux内核中控制Soft-RoCE软件实现的编译开关，当配置值为y时，该驱动会直接编译进内核；配置值为m时，则会以独立内核模块rdma_rxe的形式存在，需要手动加载。

@@ -352,4 +352,39 @@ sudo apt install -y perftest
 
 #### 3.3.2 检查命令和头文件
 
+```bash
+# command -v rdma ibv_devices ibv_devinfo rping ib_write_bw
+/usr/bin/rdma
+/usr/bin/ibv_devices
+/usr/bin/ibv_devinfo
+/usr/bin/rping
+/usr/bin/ib_write_bw
+# pkg-config --modversion libibverbs librdmacm
+1.14.39.0
+1.3.39.0
 
+# test -f /usr/include/infiniband/verbs.h && echo verbs-header-ok
+verbs-header-ok
+# test -f /usr/include/rdma/rdma_cma.h && echo rdmacm-header-ok
+rdmacm-header-ok
+```
+所有命令应返回路径，两个头文件检查应输出 ok。
+
+### 3.4 实验一 创建 Soft RoCE 设备
+
+#### 3.4.1 加载内核模块
+在两个节点执行：
+```
+# sudo modprobe rdma_rxe
+# lsmod | grep -E 'rdma_rxe|ib_uverbs|rdma_cm'
+rdma_rxe              196608  0
+ib_uverbs             192512  1 rdma_rxe
+ip6_udp_tunnel         16384  1 rdma_rxe
+udp_tunnel             32768  1 rdma_rxe
+ib_core               507904  2 rdma_rxe,ib_uverbs
+```
+如果 `modprobe` 提示找不到模块，先检查内核配置：
+```bash
+# grep CONFIG_RDMA_RXE /boot/config-$(uname -r)
+```
+期望值为 `CONFIG_RDMA_RXE=m` 或 `CONFIG_RDMA_RXE=y`。若当前云内核或裁剪内核未启用 RXE，需要换用 Ubuntu 通用内核或重新编译内核。

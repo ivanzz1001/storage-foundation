@@ -282,3 +282,74 @@ sudo apt install -y perftest
 5）**ibverbs-utils**
 
   `ibverbs-utils` 是 rdma-core 项目提供的一个用户态 RDMA 诊断与测试工具集，基于 libibverbs 库，用于查看 RDMA 设备信息、测试基本连通性和性能。它不包含驱动，也不包含开发库，只是一组命令行实用程序
+
+  - **包含哪些工具**
+
+    在 Debian/Ubuntu 中，ibverbs-utils 通常包含以下命令：
+
+    - ibv_devices: 列出系统中所有可用的 RDMA 设备
+    - ibv_devinfo: 显示指定 RDMA 设备的详细信息（端口、GID、MTU、状态等）
+    - ibv_rc_pingpong: 测试 RC（可靠连接）模式的 RDMA 通信
+    - ibv_uc_pingpong: 测试 UC（不可靠连接）模式
+    - ibv_ud_pingpong: 测试 UD（不可靠数据报）模式
+    - ibv_srq_pingpong: 测试共享接收队列（SRQ）
+    - ibv_asyncwatch: 监控 RDMA 异步事件
+    - ibv_odp_test: 测试按需分页（ODP）功能
+
+
+6） **libibverbs-dev**
+
+  `libibverbs-dev`是 `Debian/Ubuntu` 下 `libibverbs` 的开发包，用于编译和链接使用 RDMA verbs API 的程序。它提供头文件、静态库、符号链接和 pkg-config 文件；而运行时共享库由 libibverbs1 提供.
+
+7） **librdmacm-dev**
+
+  `librdmacm-dev` 是` Debian/Ubuntu` 下 `librdmacm` 的开发包，用于编译和链接使用 RDMA 连接管理（RDMA CM） API 的程序。它提供头文件、开发用符号链接、静态库和 pkg-config 文件；运行时共享库由 librdmacm1 提供
+
+  - **什么是 librdmacm**
+
+    librdmacm 是 RDMA 用户态栈中的连接管理库，提供一套类似 socket 的 API（rdma_cm），用于：
+    
+    - 建立、维护和拆除 RDMA 连接
+    - 解析地址、解析路由
+    - 管理事件（连接请求、建立、断开等）
+    - 支持 InfiniBand、RoCE、iWARP 等多种 RDMA 传输
+    
+    它位于 libibverbs 之上：libibverbs 负责底层 verbs 操作（QP、CQ、MR 等），librdmacm 负责连接的生命周期管理。
+
+8）**rdmacm-utils**
+
+  `rdmacm-utils` 是 `rdma-core` 项目下的一个工具包，它提供了一组基于 librdmacm 库的示例程序和诊断测试工具，用于验证 RDMA 连接管理（RDMA CM）的功能是否正常工作
+
+  - **包含哪些工具**
+
+    该包包含多个用于测试和演示的实用程序，主要工具如下:
+
+    - rping: 最常用的工具，用于测试 RDMA CM 的连接建立和 ping-pong 通信
+    - ucmatose: 测试不可靠连接（UC）模式的 RDMA 通信
+    - udaddy: 测试不可靠数据报（UD）模式的 RDMA 通信
+    - mckey: 测试 RDMA CM 的多播（Multicast）设置和简单数据传输
+    - rdma_client / rdma_server: 简单的 RDMA 客户端/服务器示例
+    - rdma_xclient / rdma_xserver: 基于扩展 API 的 RDMA 客户端/服务器示例
+    - riostream / rstream: 测试 RDMA 流式通信
+    - rcopy: 使用 RDMA 进行文件复制测试
+    - cmtime: 测量 RDMA CM 事件的时间
+
+9）**perftest**
+
+  `perftest` 是一套基于 libibverbs 接口开发的RDMA 性能基准测试工具集，专用于评估 RDMA 网络（InfiniBand、RoCE、iWARP）的带宽和延迟性能。它采用客户端-服务器（Client-Server）架构，通过网络连接在两台机器间进行点对点性能测试
+
+  - **包含哪些工具**
+
+    perftest 提供了覆盖不同 RDMA 操作类型的带宽和延迟测试程序:
+
+    - ib_send_bw / ib_send_lat: 带宽 / 延迟	SEND 操作
+    - ib_write_bw / ib_write_lat: 带宽 / 延迟	RDMA WRITE 操作
+    - ib_read_bw / ib_read_lat: 带宽 / 延迟	RDMA READ 操作
+    - ib_atomic_bw / ib_atomic_lat: 带宽 / 延迟	Atomic 原子操作
+    - raw_ethernet_bw / raw_ethernet_lat 等: 带宽 / 延迟	原始以太网（Raw Ethernet）
+   
+    此外还包括辅助脚本 run_perftest_loopback（回环测试）和 run_perftest_multi_devices（多设备测试）
+
+#### 3.3.2 检查命令和头文件
+
+

@@ -99,7 +99,11 @@ dev rxe0 cqn 0 cqe 1023 users 2 poll-ctx WORKQUEUE adaptive-moderation off comm 
 工具使用 TCP 18515 交换连接参数，实际数据通过 RDMA QP 传输。如果地址解析不正确，先从 ibv_devinfo -v 找到对应 IPv4 地址的 GID 索引，然后在两端增加 `-g` 索引。防火墙还需允许对端访问 TCP 18515。
 
 >说明：实际运行时当未使用`-g`指定索引时，客户端报告如下错误
-> # ibv_rc_pingpong -d rxe0 -n 1000 -s 4096 192.168.180.131
+>
+> $ ibv_rc_pingpong -d rxe0 -n 1000 -s 4096 192.168.180.131
+>
 >  local address:  LID 0x0000, QPN 0x000013, PSN 0x44aac0, GID ::
+>
 > client read/write: No space left on device
+>
 > Couldn't read/write remote address

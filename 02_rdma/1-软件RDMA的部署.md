@@ -388,3 +388,182 @@ ib_core               507904  2 rdma_rxe,ib_uverbs
 # grep CONFIG_RDMA_RXE /boot/config-$(uname -r)
 ```
 期望值为 `CONFIG_RDMA_RXE=m` 或 `CONFIG_RDMA_RXE=y`。若当前云内核或裁剪内核未启用 RXE，需要换用 Ubuntu 通用内核或重新编译内核。
+
+#### 3.4.2 绑定普通网卡
+
+当前我们两台机器上的网卡均为`ens33`:
+```bash
+# ifconfig
+ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.180.131  netmask 255.255.255.0  broadcast 192.168.180.255
+        ether 00:0c:29:80:ff:ae  txqueuelen 1000  (Ethernet)
+        RX packets 90866  bytes 117373439 (117.3 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 25581  bytes 2329638 (2.3 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+```
+在两个节点分别执行如下命令绑定网卡:
+
+```bash
+# sudo rdma link add rxe0 type rxe netdev ens33
+```
+官方 `rdma-core` 使用相同的 `rdma link add NAME type rxe netdev DEVICE` 方式创建软件设备
+
+#### 3.4.3 验证 RDMA 设备
+
+分别在`192.168.180.131`和`192.168.180.132`这两个节点执行:
+```bash
+# rdma link show
+link rxe0/1 state ACTIVE physical_state LINK_UP netdev ens33
+
+# ibv_devices
+    device                 node GUID
+    ------              ----------------
+    rxe0                020c29fffe80ffae
+
+# ibv_devinfo -d rxe0
+hca_id: rxe0
+        transport:                      InfiniBand (0)
+        fw_ver:                         0.0.0
+        node_guid:                      020c:29ff:fe80:ffae
+        sys_image_guid:                 020c:29ff:fe80:ffae
+        vendor_id:                      0xffffff
+        vendor_part_id:                 0
+        hw_ver:                         0x0
+        phys_port_cnt:                  1
+                port:   1
+                        state:                  PORT_ACTIVE (4)
+                        max_mtu:                4096 (5)
+                        active_mtu:             1024 (3)
+                        sm_lid:                 0
+                        port_lid:               0
+                        port_lmc:               0x00
+                        link_layer:             Ethernet
+# ls -l /dev/infiniband
+total 0
+crw-rw-rw- 1 root root  10, 263 10月  8 18:03 rdma_cm
+crw-rw-rw- 1 root root 231, 192 10月  8 18:03 uverbs0
+```
+
+典型结果应满足以下条件:
+
+- rdma link show 包含 rxe0/1，状态通常为 ACTIVE，并显示绑定的普通网卡。
+- ibv_devices 能列出 rxe0。
+- ibv_devinfo 的 transport 为 InfiniBand transport，但端口 link_layer 为 Ethernet。
+- /dev/infiniband 中存在 uverbs0 和 rdma_cm 等设备节点。
+
+#### 3.4.4 查看 GID
+```bash
+# ibv_devinfo -d rxe0 -v | less
+hca_id: rxe0
+        transport:                      InfiniBand (0)
+        fw_ver:                         0.0.0
+        node_guid:                      020c:29ff:fe80:ffae
+        sys_image_guid:                 020c:29ff:fe80:ffae
+        vendor_id:                      0xffffff
+        vendor_part_id:                 0
+        hw_ver:                         0x0
+        phys_port_cnt:                  1
+        max_mr_size:                    0xffffffffffffffff
+        page_size_cap:                  0xfffff000
+        max_qp:                         1048560
+        max_qp_wr:                      1048576
+        device_cap_flags:               0x01223c76
+                                        BAD_PKEY_CNTR
+                                        BAD_QKEY_CNTR
+                                        AUTO_PATH_MIG
+                                        CHANGE_PHY_PORT
+                                        UD_AV_PORT_ENFORCE
+                                        PORT_ACTIVE_EVENT
+                                        SYS_IMAGE_GUID
+                                        RC_RNR_NAK_GEN
+                                        SRQ_RESIZE
+                                        MEM_WINDOW
+                                        MEM_MGT_EXTENSIONS
+                                        MEM_WINDOW_TYPE_2B
+        max_sge:                        32
+        max_sge_rd:                     32
+        max_cq:                         1048576
+        max_cqe:                        32767
+        max_mr:                         524287
+        max_pd:                         1048576
+        max_qp_rd_atom:                 128
+        max_ee_rd_atom:                 0
+        max_res_rd_atom:                258048
+        max_qp_init_rd_atom:            128
+        max_ee_init_rd_atom:            0
+        atomic_cap:                     ATOMIC_HCA (1)
+        max_ee:                         0
+        max_rdd:                        0
+        max_mw:                         524287
+        max_raw_ipv6_qp:                0
+        max_raw_ethy_qp:                0
+        max_mcast_grp:                  8192
+        max_mcast_qp_attach:            56
+        max_total_mcast_qp_attach:      458752
+        max_ah:                         32767
+        max_fmr:                        0
+        max_srq:                        917503
+        max_srq_wr:                     1048576
+        max_srq_sge:                    27
+        max_pkeys:                      64
+        local_ca_ack_delay:             15
+        general_odp_caps:
+        rc_odp_caps:
+                                        NO SUPPORT
+        uc_odp_caps:
+                                        NO SUPPORT
+        ud_odp_caps:
+                                        NO SUPPORT
+        xrc_odp_caps:
+                                        NO SUPPORT
+        completion_timestamp_mask not supported
+        core clock not supported
+        device_cap_flags_ex:            0x1C001223C76
+                                        Unknown flags: 0x1C000000000
+        tso_caps:
+                max_tso:                        0
+        rss_caps:
+                max_rwq_indirection_tables:                     0
+                max_rwq_indirection_table_size:                 0
+                rx_hash_function:                               0x0
+                rx_hash_fields_mask:                            0x0
+        max_wq_type_rq:                 0
+        packet_pacing_caps:
+                qp_rate_limit_min:      0kbps
+                qp_rate_limit_max:      0kbps
+        tag matching not supported
+        num_comp_vectors:               128
+                port:   1
+                        state:                  PORT_ACTIVE (4)
+                        max_mtu:                4096 (5)
+                        active_mtu:             1024 (3)
+                        sm_lid:                 0
+                        port_lid:               0
+                        port_lmc:               0x00
+                        link_layer:             Ethernet
+                        max_msg_sz:             0x80000000
+                        port_cap_flags:         0x00010000
+                        port_cap_flags2:        0x0000
+                        max_vl_num:             1 (1)
+                        bad_pkey_cntr:          0x0
+                        qkey_viol_cntr:         0x0
+                        sm_sl:                  0
+                        pkey_tbl_len:           1
+                        gid_tbl_len:            1024
+                        subnet_timeout:         0
+                        init_type_reply:        0
+                        active_width:           1X (1)
+                        active_speed:           2.5 Gbps (1)
+                        phys_state:             LINK_UP (5)
+                        GID[  0]:               fe80::20c:29ff:fe80:ffae, RoCE v2
+                        GID[  1]:               ::ffff:192.168.180.131, RoCE v2
+```
+在端口信息中找到 `GID` 表。RXE 通常会为网卡 IP 生成 IPv4 映射 GID。后续如果工具不能自动选择正确 GID，可通过 `-g`或 `-x` 显式指定索引。
+
+#### 3.4.5 删除和重建
+```bash
+# sudo rdma link delete rxe0
+# sudo rdma link add rxe0 type rxe netdev ens33
+```
+成功删除设备不会删除普通网卡或其 IP 地址。它只移除绑定在该网卡上的 RXE RDMA 设备.

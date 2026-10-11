@@ -107,3 +107,113 @@ dev rxe0 cqn 0 cqe 1023 users 2 poll-ctx WORKQUEUE adaptive-moderation off comm 
 > client read/write: No space left on device
 >
 > Couldn't read/write remote address
+
+
+### 2.2 RDMA Write 带宽
+
+- **节点A(192.168.180.131)**
+  ```bash
+  # ib_write_bw -d rxe0 -R -D 10 --report_gbits
+  
+  ************************************
+  * Waiting for client to connect... *
+  ************************************
+  ```
+
+- **节点B(192.168.180.132)**
+  ```bash
+  # ib_write_bw -d rxe0 -R -D 10 --report_gbits 192.168.180.131
+  ---------------------------------------------------------------------------------------
+                      RDMA_Write BW Test
+   Dual-port       : OFF          Device         : rxe0
+   Number of qps   : 1            Transport type : IB
+   Connection type : RC           Using SRQ      : OFF
+   PCIe relax order: ON
+   ibv_wr* API     : OFF
+   TX depth        : 128
+   CQ Moderation   : 1
+   Mtu             : 1024[B]
+   Link type       : Ethernet
+   GID index       : 1
+   Max inline data : 0[B]
+   rdma_cm QPs     : ON
+   Data ex. method : rdma_cm
+  ---------------------------------------------------------------------------------------
+   local address: LID 0000 QPN 0x0016 PSN 0xa3d5f5
+   GID: 00:00:00:00:00:00:00:00:00:00:255:255:192:168:180:132
+   remote address: LID 0000 QPN 0x0016 PSN 0x52f407
+   GID: 00:00:00:00:00:00:00:00:00:00:255:255:192:168:180:131
+  ---------------------------------------------------------------------------------------
+   #bytes     #iterations    BW peak[Gb/sec]    BW average[Gb/sec]   MsgRate[Mpps]
+   65536      4819             0.00               0.42               0.000804
+  ---------------------------------------------------------------------------------------
+  ```
+
+>说明：两端参数必须一致。`-R` 让 perftest 通过 RDMA CM 创建 QP，`-D 10` 表示运行 10 秒。成功时输出应包含设备名、连接类型、链路类型、消息大小、平均带宽和消息速率。
+
+### 2.3 RDMA Read 时延
+
+- **节点A(192.168.180.131)**
+  ```bash
+  # ib_read_lat -d rxe0 -R -s 8 -n 5000
+  ---------------------------------------------------------------------------------------
+  Device not recognized to implement inline feature. Disabling it
+  
+  ************************************
+  * Waiting for client to connect... *
+  ************************************
+  ```
+
+- **节点B(192.168.180.132)**
+  ```bash
+  # ib_read_lat -d rxe0 -R -s 8 -n 5000 192.168.180.131
+  ---------------------------------------------------------------------------------------
+  Device not recognized to implement inline feature. Disabling it
+  ---------------------------------------------------------------------------------------
+                      RDMA_Read Latency Test
+   Dual-port       : OFF          Device         : rxe0
+   Number of qps   : 1            Transport type : IB
+   Connection type : RC           Using SRQ      : OFF
+   PCIe relax order: ON
+   ibv_wr* API     : OFF
+   TX depth        : 1
+   Mtu             : 1024[B]
+   Link type       : Ethernet
+   GID index       : 1
+   Outstand reads  : 128
+   rdma_cm QPs     : ON
+   Data ex. method : rdma_cm
+  ---------------------------------------------------------------------------------------
+   local address: LID 0000 QPN 0x0018 PSN 0x4f70ec
+   GID: 00:00:00:00:00:00:00:00:00:00:255:255:192:168:180:132
+   remote address: LID 0000 QPN 0x0018 PSN 0x73c994
+   GID: 00:00:00:00:00:00:00:00:00:00:255:255:192:168:180:131
+  ---------------------------------------------------------------------------------------
+   #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+   8       5000          95.60          7993.00      213.33              490.49           1052.79         5958.70                 7579.10
+  ---------------------------------------------------------------------------------------
+  ```
+
+这个实验让客户端从服务端暴露的远端内存读取 8 字节。程序需要先交换远端虚拟地址和 rkey，然后才能发起 RDMA Read。
+
+### 2.4 参数实验
+
+依次测试 64 B、4 KiB、64 KiB 和 1 MiB：
+```bash
+for size in 64 4096 65536 1048576; do
+  echo "size=$size"
+  ib_write_bw -d rxe0 -R -D 5 -s "$size" --report_gbits 192.168.56.101
+done
+```
+服务端需针对每个大小运行相同参数，或分别执行四次。记录平均带宽、消息速率和 CPU 占用。小消息通常受每秒操作次数和软件处理开销限制，大消息更容易接近底层普通网卡的可用吞吐。这里观察的是 RXE 软件路径，不是硬件 RDMA 的性能。
+
+### 2.5 建议的实验记录
+
+|     测试	|   大小	|迭代或时长	|平均值	|CPU	|备注|
+| --------- | ------- | -------- | ------ | ----- | -------- |
+|ib_write_bw|	64 B   |	5 s      |	记录	|记录	  |小消息    |
+|ib_write_bw|	4 KiB  |	5 s      |	记录	|记录	  |常用页大小 |
+|ib_write_bw|	64 KiB |	5 s	     |记录	  |记录	  |中等消息   |
+|ib_write_bw|	1 MiB  |	5 s	     |记录	  |记录	  |大消息     |
+|ib_read_lat|	8 B    |	5000	   |记录	  |记录	  |单向读取   |
+

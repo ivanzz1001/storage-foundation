@@ -291,7 +291,8 @@ done
   完成一次短测试后按 Ctrl C 停止。
 
   之后，使用wireshark进行分析:
-  
+
+  ![rdma-roce](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/02_rdma/assets/rdma_roce_wireshark.jpg)
   
 
 

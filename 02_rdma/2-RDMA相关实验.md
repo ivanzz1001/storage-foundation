@@ -295,4 +295,8 @@ done
   ![rdma-roce](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/02_rdma/assets/rdma_roce_wireshark.jpg)
   
 
+## 参考文档
 
+- ibta-specification： https://infinibandta.org/ibta-specification/
+
+- RoCE v2 Considerations： https://enterprise-support.nvidia.com/s/article/roce-v2-considerations

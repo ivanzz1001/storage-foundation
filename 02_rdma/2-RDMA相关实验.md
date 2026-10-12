@@ -217,3 +217,81 @@ done
 |ib_write_bw|	1 MiB  |	5 s	     |记录	  |记录	  |大消息     |
 |ib_read_lat|	8 B    |	5000	   |记录	  |记录	  |单向读取   |
 
+---
+
+## 3. 实验三 抓取并识别 RoCEv2 报文
+
+### 3.1 抓包
+
+1）tcpdump直接抓包并输出
+
+  首先，`节点 A`(192.168.180.131) 在测试前启动抓包命令：
+  ```bash
+  sudo tcpdump -ni ens33 udp port 4791 -vv
+  ```
+  
+  接着，`节点A`(192.168.180.131)在另一个终端启动`rping`服务端:
+  ```bash
+  rping -s -a 192.168.180.131 -p 7471 -v -V
+  ```
+
+  之后，`节点B`(192.168.180.132)启动`rping`客户端:
+  ```bash
+  $ rping -c -a 192.168.180.131 -p 7471 -C 10 -v -V
+  ping data: rdma-ping-0: ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqr
+  ping data: rdma-ping-1: BCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrs
+  ping data: rdma-ping-2: CDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrst
+  ping data: rdma-ping-3: DEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstu
+  ping data: rdma-ping-4: EFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuv
+  ping data: rdma-ping-5: FGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvw
+  ping data: rdma-ping-6: GHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwx
+  ping data: rdma-ping-7: HIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxy
+  ping data: rdma-ping-8: IJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz
+  ping data: rdma-ping-9: JKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyzA
+  ```
+
+  我们可以看到tcpdump的输出如下:
+  ```text
+  # sudo tcpdump -ni ens33 udp port 4791 -vv
+  tcpdump: listening on ens33, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+  23:55:06.732122 IP (tos 0x0, ttl 64, id 35041, offset 0, flags [DF], proto UDP (17), length 308)
+      192.168.180.132.55410 > 192.168.180.131.4791: [no cksum] UDP, length 280
+  23:55:06.733211 IP (tos 0x0, ttl 64, id 29560, offset 0, flags [DF], proto UDP (17), length 308)
+      192.168.180.131.55410 > 192.168.180.132.4791: [no cksum] UDP, length 280
+  23:55:06.735869 IP (tos 0x0, ttl 64, id 35042, offset 0, flags [DF], proto UDP (17), length 308)
+      192.168.180.132.55410 > 192.168.180.131.4791: [no cksum] UDP, length 280
+  23:55:06.735871 IP (tos 0x0, ttl 64, id 35043, offset 0, flags [DF], proto UDP (17), length 60)
+      192.168.180.132.61931 > 192.168.180.131.4791: [no cksum] UDP, length 32
+  23:55:06.735937 IP (tos 0x0, ttl 64, id 29563, offset 0, flags [DF], proto UDP (17), length 48)
+      192.168.180.131.61931 > 192.168.180.132.4791: [no cksum] UDP, length 20
+  23:55:06.736150 IP (tos 0x0, ttl 64, id 29564, offset 0, flags [DF], proto UDP (17), length 60)
+      192.168.180.131.61931 > 192.168.180.132.4791: [no cksum] UDP, length 32
+  23:55:06.736524 IP (tos 0x0, ttl 64, id 35044, offset 0, flags [DF], proto UDP (17), length 112)
+      192.168.180.132.61931 > 192.168.180.131.4791: [no cksum] UDP, length 84
+  23:55:06.736641 IP (tos 0x0, ttl 64, id 29565, offset 0, flags [DF], proto UDP (17), length 60)
+      192.168.180.131.61931 > 192.168.180.132.4791: [no cksum] UDP, length 32
+  23:55:06.736868 IP (tos 0x0, ttl 64, id 35045, offset 0, flags [DF], proto UDP (17), length 48)
+      192.168.180.132.61931 > 192.168.180.131.4791: [no cksum] UDP, length 20
+  23:55:06.737051 IP (tos 0x0, ttl 64, id 35046, offset 0, flags [DF], proto UDP (17), length 60)
+      192.168.180.132.61931 > 192.168.180.131.4791: [no cksum] UDP, length 32
+  23:55:06.737072 IP (tos 0x0, ttl 64, id 29566, offset 0, flags [DF], proto UDP (17), length 48)
+      192.168.180.131.61931 > 192.168.180.132.4791: [no cksum] UDP, length 20
+  23:55:06.737187 IP (tos 0x0, ttl 64, id 29567, offset 0, flags [DF], proto UDP (17), length 124)
+  ...
+  ```
+
+2) tcpdump抓包并保存，使用wireshark进行分析
+
+  首先，`节点 A`(192.168.180.131) 在测试前启动抓包命令：
+  ```bash
+  sudo tcpdump -ni ens33 udp port 4791 -w rocev2.pcap
+  ```
+  接着分别在`节点A`启动rping服务端，`节点B`启动rping客户端。
+
+  完成一次短测试后按 Ctrl C 停止。
+
+  之后，使用wireshark进行分析:
+  
+  
+
+

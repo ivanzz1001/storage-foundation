@@ -31,14 +31,14 @@
 ### 1.1 启动服务端
 在主机`192.168.180.131`启动服务端：
 ```bash
-# rping -s -a 192.168.180.131 -p 7471 -v -V
+$ rping -s -a 192.168.180.131 -p 7471 -v -V
 ```
 ### 1.2 启动客户端
 
 在主机`192.168.180.132`上启动客户端:
 
 ```
-# rping -c -a 192.168.180.131 -p 7471 -C 10 -v -V
+$ rping -c -a 192.168.180.131 -p 7471 -C 10 -v -V
 ping data: rdma-ping-0: ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqr
 ping data: rdma-ping-1: BCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrs
 ping data: rdma-ping-2: CDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrst
@@ -64,16 +64,16 @@ sudo ufw allow in on ens33 from 192.168.180.132 to any port 4791 proto udp
 ### 1.4 观察资源
 让 rping 保持运行，在任意节点打开另一个终端：
 ```bash
-# rdma resource show
+$ rdma resource show
 0: rxe0: pd 2 cq 1 qp 1 cm_id 1 mr 0 ctx 1 srq 0 
 
-# rdma resource show qp
+$ rdma resource show qp
 link rxe0/1 lqpn 1 type GSI state RTS sq-psn 2 comm [ib_core] 
 
-# rdma resource show cq
+$ rdma resource show cq
 dev rxe0 cqn 0 cqe 1023 users 2 poll-ctx WORKQUEUE adaptive-moderation off comm [ib_core] 
 
-# rdma resource show mr
+$ rdma resource show mr
 ```
 结束 rping 后再次执行。由进程创建的 QP、CQ 和 MR 应被释放。这个实验说明 RDMA 资源由内核按用户态上下文跟踪，进程退出时内核会清理残留资源。
 
@@ -90,7 +90,7 @@ dev rxe0 cqn 0 cqe 1023 users 2 poll-ctx WORKQUEUE adaptive-moderation off comm 
 
 节点B(192.168.180.132):
 ```bash
-# ibv_rc_pingpong -d rxe0 -g 1 -n 1000 -s 4096 192.168.180.131
+$ ibv_rc_pingpong -d rxe0 -g 1 -n 1000 -s 4096 192.168.180.131
   local address:  LID 0x0000, QPN 0x000014, PSN 0xbfc017, GID ::ffff:192.168.180.132
   remote address: LID 0x0000, QPN 0x000014, PSN 0x3df778, GID ::ffff:192.168.180.131
 8192000 bytes in 1.30 seconds = 50.38 Mbit/sec
@@ -113,7 +113,7 @@ dev rxe0 cqn 0 cqe 1023 users 2 poll-ctx WORKQUEUE adaptive-moderation off comm 
 
 - **节点A(192.168.180.131)**
   ```bash
-  # ib_write_bw -d rxe0 -R -D 10 --report_gbits
+  $ ib_write_bw -d rxe0 -R -D 10 --report_gbits
   
   ************************************
   * Waiting for client to connect... *
@@ -122,7 +122,7 @@ dev rxe0 cqn 0 cqe 1023 users 2 poll-ctx WORKQUEUE adaptive-moderation off comm 
 
 - **节点B(192.168.180.132)**
   ```bash
-  # ib_write_bw -d rxe0 -R -D 10 --report_gbits 192.168.180.131
+  $ ib_write_bw -d rxe0 -R -D 10 --report_gbits 192.168.180.131
   ---------------------------------------------------------------------------------------
                       RDMA_Write BW Test
    Dual-port       : OFF          Device         : rxe0
@@ -155,7 +155,7 @@ dev rxe0 cqn 0 cqe 1023 users 2 poll-ctx WORKQUEUE adaptive-moderation off comm 
 
 - **节点A(192.168.180.131)**
   ```bash
-  # ib_read_lat -d rxe0 -R -s 8 -n 5000
+  $ ib_read_lat -d rxe0 -R -s 8 -n 5000
   ---------------------------------------------------------------------------------------
   Device not recognized to implement inline feature. Disabling it
   
@@ -166,7 +166,7 @@ dev rxe0 cqn 0 cqe 1023 users 2 poll-ctx WORKQUEUE adaptive-moderation off comm 
 
 - **节点B(192.168.180.132)**
   ```bash
-  # ib_read_lat -d rxe0 -R -s 8 -n 5000 192.168.180.131
+  $ ib_read_lat -d rxe0 -R -s 8 -n 5000 192.168.180.131
   ---------------------------------------------------------------------------------------
   Device not recognized to implement inline feature. Disabling it
   ---------------------------------------------------------------------------------------

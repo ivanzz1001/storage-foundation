@@ -280,7 +280,7 @@ done
   ...
   ```
 
-2) tcpdump抓包并保存，使用wireshark进行分析
+2）tcpdump抓包并保存，使用wireshark进行分析
 
   首先，`节点 A`(192.168.180.131) 在测试前启动抓包命令：
   ```bash
@@ -291,7 +291,7 @@ done
   完成一次短测试后按 Ctrl C 停止。
 
   之后，使用wireshark进行分析:
-
+  
   ![rdma-roce](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/02_rdma/assets/rdma_roce_wireshark.jpg)
   
 

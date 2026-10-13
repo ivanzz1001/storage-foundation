@@ -305,6 +305,19 @@ done
 
 抓包只能看到网络报文，不能直接看到 `PD`、`MR`、`CQ` 或 `QP` 对象。使用 `rdma resource show` 补充观察内核资源。
 
+下面结合前面的抓包及wireshark截图来分析一下，从抓包可以确认：
+- 192.168.180.132：rping client
+- 192.168.180.131：rping server
+- 使用 RoCEv2、RC（Reliable Connected）QP
+- 握手完成后，每次 rping 循环都执行：`client公布源内存` → `server RDMA Read` → `server通知client` → `client公布目标内存` → `server RDMA Write回显` → `server通知完成`
+
+这与`rdma-core`的`rping` 实现一致：客户端通过 SEND 发送 `远程地址 + rkey + 长度`，服务端读取客户端内存，再把数据写回客户端的另一个内存区
+
+
+
+
+
+
 
 --- 
 

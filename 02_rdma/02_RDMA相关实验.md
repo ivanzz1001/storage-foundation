@@ -314,8 +314,94 @@ done
 这与`rdma-core`的`rping` 实现一致：客户端通过 SEND 发送 `远程地址 + rkey + 长度`，服务端读取客户端内存，再把数据写回客户端的另一个内存区
 
 
+#### 3.2.1 RDMA CM 建连(1~3)
+
+|包号	|    方向	    |  含义  |
+| --- | ----------- | ------|
+|1    |	.132 → .131	|CM: ConnectRequest。客户端请求建立 RDMA RC 连接，携带本端 QP、初始 PSN、重试参数、读资源能力、Service ID 等。|
+|2    |	.131 → .132	|CM: ConnectReply。服务端接受连接并返回自己的 QP、PSN、Responder Resources 等参数。|
+|3    |	.132 → .131	|CM: ReadyToUse。客户端确认双方参数已经准备好，QP 可以进入 RTS，开始传输。|
 
 
+这相当于 `RDMA CM` 的 `REQ → REP → RTU`，不是 TCP 三次握手。
+
+截图中的 `CM` 帧都是 322 字节；数据阶段则通过 UDP 4791 承载 RoCEv2。rping 默认应用端口通常是 7174，但它属于 CM Service ID 语义，不能把 Wireshark 中的 UDP 4791 当成 rping 应用监听端口。
+
+
+#### 3.2.2 第一次 rping(4～15)
+| 包号 | 方向 | Wireshark 类型 | rping 中的含义 |
+|---|---|---|---|
+| 4 | client → server | `RC Send Only` | 客户端发送源内存描述符：`start_buf虚拟地址 + rkey + size`。不是直接发送 ping 数据，载荷只有 16 字节。 |
+| 5 | server → client | `RC Acknowledge` | RC 传输层确认已经可靠接收第 4 包。 |
+| 6 | server → client | `RC RDMA Read Request` | 服务端使用第 4 包提供的地址和 rkey，发起单边 RDMA Read，读取客户端的 `start_buf`。 |
+| 7 | client → server | `RC RDMA Read Response Only` | 客户端 RNIC 返回被读取的数据。截图中可见 `rdma-ping-0: ABCDEFGHI...`，共约 64 字节。 |
+| 8 | server → client | `RC Send Only` | 服务端确认 RDMA Read 已完成，应用层含义是“go ahead，可以继续”。 |
+| 9 | client → server | `RC Acknowledge` | 对第 8 包 SEND 的 RC 可靠确认。 |
+| 10 | client → server | `RC Send Only` | 客户端发送用于接收回显的目标内存描述符：`rdma_buf地址 + rkey + size`。 |
+| 11 | server → client | `RC Acknowledge` | 确认收到第 10 包的目标内存信息。 |
+| 12 | server → client | `RC RDMA Write Only` | 服务端把刚才 Read 到的数据，单边写入客户端第 10 包指定的 `rdma_buf`。这就是 pong/echo。 |
+| 13 | client → server | `RC Acknowledge` | 客户端 RNIC 确认 RDMA Write 已成功落入内存。 |
+| 14 | server → client | `RC Send Only` | 服务端发送第二个“go ahead”，通知客户端：本轮 RDMA Write 已完成，可以校验数据或开始下一轮。 |
+| 15 | client → server | `RC Acknowledge` | 对第 14 包的可靠确认。第一轮结束。 |
+
+这里要区分两种“确认”：
+
+- RC Acknowledge 是 RNIC/RC 传输层 ACK，由网卡协议栈产生。
+- 第 8、14 包的 Send Only 是 rping 程序自己设计的应用层状态通知。
+
+#### 3.2.3 第二次 rping(16～27)
+流程与第一轮完全相同，只是测试数据变成下一组，例如 `rdma-ping-1: ...`
+
+| 包号 | 含义 |
+|---|---|
+| 16 | client 发送第二轮源内存地址、rkey、长度 |
+| 17 | server 对该 SEND 返回 RC ACK |
+| 18 | server 发起第二轮 RDMA Read Request |
+| 19 | client 返回 RDMA Read Response，携带第二轮 ping 数据 |
+| 20 | server SEND“Read 完成，可以继续” |
+| 21 | client 对该 SEND 返回 ACK |
+| 22 | client 发送用于接收回显的目标内存地址、rkey、长度 |
+| 23 | server ACK |
+| 24 | server RDMA Write，把数据回写到 client 目标内存 |
+| 25 | client ACK，表示 Write 已被可靠接收 |
+| 26 | server SEND“Write 完成，本轮结束” |
+| 27 | client ACK |
+
+#### 3.2.4 第三次 rping(28～截图末尾)
+| 包号 | 含义 |
+|---|---|
+| 28 | client 发送第三轮源内存描述符 |
+| 29 | server ACK |
+| 30 | server 发起 RDMA Read Request |
+| 31 | client 返回 RDMA Read Response，携带第三轮数据 |
+| 32 | server SEND“Read 完成”通知 |
+| 33 | client ACK |
+| 34 | 截图只显示了一部分；从方向和 74 字节长度判断，是 client 发送第三轮目标内存描述符。其后正常应出现 ACK、RDMA Write、ACK、完成通知。 |
+
+#### 2.2.5 为什么长度正好是这些数值
+这些长度也能验证上述判断：
+- `RC Acknowledge = 62 B`
+  
+  Ethernet 14 + IPv4 20 + UDP 8 + BTH 12 + AETH 4 + ICRC 4
+  
+- `RC Send Only = 74 B`
+  
+  基础头部和 ICRC 58 + rping 内存描述符 16
+  该描述符结构为：8 字节地址 + 4 字节 rkey + 4 字节长度。
+  
+- `RDMA Read Request = 74 B`
+  
+  基础 58 + RETH 16；RETH 携带远端地址、rkey 和读取长度。
+  
+- `RDMA Read Response Only = 126 B`
+  
+  Ethernet/IP/UDP/BTH/AETH + 64 字节数据 + ICRC。
+  
+- `RDMA Write Only = 138 B`
+  
+  Ethernet/IP/UDP/BTH + RETH 16 + 64 字节数据 + ICRC。
+  
+其中 `Only` 表示这个 `RDMA` 消息只有一个分片，即同时是 `First` 和 `Last`，并不是“只有该操作”或“不需要确认”。
 
 
 

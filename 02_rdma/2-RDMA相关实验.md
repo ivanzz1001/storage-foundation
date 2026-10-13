@@ -223,7 +223,7 @@ done
 
 ### 3.1 抓包
 
-1）tcpdump直接抓包并输出
+1）**tcpdump直接抓包并输出**
 
   首先，`节点 A`(192.168.180.131) 在测试前启动抓包命令：
   ```bash
@@ -280,7 +280,7 @@ done
   ...
   ```
 
-2）tcpdump抓包并保存，使用wireshark进行分析
+2）**tcpdump抓包并保存，使用wireshark进行分析**
 
   首先，`节点 A`(192.168.180.131) 在测试前启动抓包命令：
   ```bash
@@ -293,7 +293,20 @@ done
   之后，使用wireshark进行分析:
   
   ![rdma-roce](https://raw.githubusercontent.com/ivanzz1001/storage-foundation/master/02_rdma/assets/rdma_roce_wireshark.jpg)
-  
+
+### 3.2 对照用户态动作
+按时间观察以下阶段：
+
+1. `RDMA CM`完成地址和路由解析，并建立连接。
+1. 接收方预先提交`Receive WR`。
+1. 发送方提交`Send WR`，`RXE` 生成 `RoCEv2` 报文。
+1. 对端处理数据并在 `CQ` 中产生完成项。
+1. 应用通过 `ibv_poll_cq` 或完成事件发现 `WC`。
+
+抓包只能看到网络报文，不能直接看到 `PD`、`MR`、`CQ` 或 `QP` 对象。使用 `rdma resource show` 补充观察内核资源。
+
+
+--- 
 
 ## 参考文档
 
